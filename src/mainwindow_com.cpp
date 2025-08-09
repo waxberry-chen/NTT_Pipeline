@@ -132,24 +132,22 @@ void MainWindow::Get_Sever_inst()
     }
     else if(array.at(0)=='N' && array.at(1)=='T' && array.at(2)=='T' && array.at(3)=='_' &&
              array.at(4)=='P' && array.at(5)=='i' && array.at(6)=='p' && array.at(7)=='e')
-    {
-        static char i =0;
+    {// **************************** NTT Pipeline ******************************* //
         int addr = 8;
         int t =array.size();
         while(addr<t)
         {
             str.append(array.at(addr)); addr ++;
         }
-        NTT_data = str.toUInt(NULL,10);
-        srand((unsigned int) time(NULL) + i);
-        i++;
-        int r = (((rand() * rand() * rand()) )% 3329 + 3329 )%3329;
-        NTT_Tamplate_a = (((NTT_data/5) - 2 + 3329 )%3329 * r +r)%3329;
-        NTT_Tamplate_b = ((NTT_data%5 - 2 + 3329 )%3329 * r + r)%3329;
+        // 直接使用服务器发送的随机a值
+        NTT_Tamplate_a = str.toUInt(NULL,10);
+        // 使用固定的b值
+        NTT_Tamplate_b = 1000;
+        
         this->hw->pData_In->write(0x0100,NTT_Tamplate_a);
         this->hw->pData_In->write(0x0102,NTT_Tamplate_b);
         this->hw->pData_In->write(0x0002,0x0001);
-        qDebug()<< NTT_Tamplate_a <<" "<<NTT_Tamplate_b<<" "<<r <<endl;
+        qDebug()<< "NTT_Pipe: a=" << NTT_Tamplate_a << ", b=" << NTT_Tamplate_b << endl;
     }
     else if(array.at(0)=='P' && array.at(1)=='W' && array.at(2)=='M' && array.at(3)=='_' &&
              array.at(4)=='P' && array.at(5)=='i' && array.at(6)=='p' && array.at(7)=='e')
