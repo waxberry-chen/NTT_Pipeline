@@ -5,12 +5,56 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.artist import kwdoc
 
+import numpy as np
 
-def V_internal(plaintext, key_guess):
-    # V = 1 if  plaintext+(key_guess*1729)%3329 > 3329 else 0
-    # return V
-    V = plaintext+((key_guess<<3)*1729)%3329
-    return V  & 0x01
+WN = 1729
+MODULUS = 3329
+# Unknown bit number
+NUM_UNKNOWN_BITS = 9  # 12-bit key - 3-bit guess = 9 unknown bits
+UNKNOWN_POSSIBILITIES = 1 << NUM_UNKNOWN_BITS # 2^9 = 512
+
+def V_internal(plaintext, key_low_guess):
+    """
+    一个适用于部分密钥猜测的DPA T-Test分类函数.
+    它通过平均掉未知比特的影响来决定分类.
+
+    Args:
+        plaintext (int): 输入的明文 a.
+        key_low_guess (int): 对密钥低3位的猜测 (0-7).
+
+    Returns:
+        int: 0 或 1，用于DPA分类.
+    """
+    
+    predictions_true_count = 0
+
+    # 遍历未知高位的所有可能性 (0 to 511)
+    for b_high in range(UNKNOWN_POSSIBILITIES):
+        # 1. 重构一个完整的12位b的猜测值
+        #    将高9位和我们假设的低3位拼接起来
+        b_full_guess = (b_high << 3) | key_low_guess
+        # 2. 根据完整的b_guess计算product
+        product_guess = (b_full_guess * WN) % MODULUS
+        
+        # 3. 判断条件是否为真
+        if (plaintext + product_guess) >= MODULUS:
+            predictions_true_count += 1
+            
+    # 4. 计算条件为真的概率
+    probability_true = predictions_true_count / UNKNOWN_POSSIBILITIES
+    
+    # 5. 根据概率进行二元分类
+    #    如果概率大于50%，我们认为它更倾向于“发生减法”的高功耗事件，归为1类
+    if probability_true > 0.5:
+        return 1
+    else:
+        return 0
+
+# def V_internal(plaintext, key_guess):
+#     # V = 1 if  plaintext+(key_guess*1729)%3329 > 3329 else 0
+#     # return V
+#     V = plaintext+((key_guess<<3)*1729)%3329
+#     return V  & 0x01
 
 
 class DPA:
@@ -180,15 +224,15 @@ class DPA:
 
         print("差分功耗分析结果:")
 
-        for key, delta in enumerate(result):
-            print(f"Key {key}: {delta[:5]}...")
-            if key <=3 :
-                axs1[key].plot(self.time,delta)
-                axs1[key].set_title(f"key(hex): {hex(key)}")
-            else :
-                axs2[key-4].plot(self.time, delta)
-                axs2[key-4].set_title(f"key(hex): {hex(key)}")
-        plt.tight_layout()  # 自动调整间距
+        # for key, delta in enumerate(result):
+        #     print(f"Key {key}: {delta[:5]}...")
+        #     if key <=3 :
+        #         axs1[key].plot(self.time,delta)
+        #         axs1[key].set_title(f"key(hex): {hex(key)}")
+        #     else :
+        #         axs2[key-4].plot(self.time, delta)
+        #         axs2[key-4].set_title(f"key(hex): {hex(key)}")
+        # plt.tight_layout()  # 自动调整间距
 
         max_power =0
         max_key = 0
@@ -199,7 +243,7 @@ class DPA:
                 max_key = key
                 max_power = d_max
         print(f'max key : {max_key}, max power : {max_power}')
-        plt.show()
+        # plt.show()
 
 
 
