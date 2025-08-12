@@ -2,3 +2,5 @@
 /FPGA_IMP_2/
 /modelsim/
 /data/
+/analysis/*.txt
+/analysis/*.xlsx
