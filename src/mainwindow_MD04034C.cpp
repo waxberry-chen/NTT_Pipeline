@@ -15,7 +15,7 @@ char Trig_Vol[]    = "TRIGger:A:LEVel:CH1 1.4";          //触发电平
 char Trig_Mode[]   = "TRIGger:A:EDGE:SLOpe RISe";        //触发方式 rise  fAll
 char Read_CH[] = "DATa:SOUrce CH2";                  //读取通道
 char Data_Start[] = "DATa:START 90000";                  //start 100k - 10k
-char Data_Stop [32] = "DATa:STOP 430000";                //Stop 100k + 330k
+char Data_Stop [32]                                                                                                                   = "DATa:STOP 430000";                //Stop 100k + 330k
 char Data_Mode[]  = "DATa:ENCdg RPBinary";           //无符号数
 
 char PWM4_Time[] ="HORIZONTAL:SCALE 4E-7";                   //时间400ns
@@ -661,6 +661,10 @@ void MainWindow::Sampler_Attack()
     }
 
 }
+
+// ****************************************** //
+//      TEST: Pipeline "Template" Attack      //
+// ****************************************** //
 
 void MainWindow::PWM_Pipeline_Attack()
 {
